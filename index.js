@@ -81,6 +81,7 @@ app.use("/api/users", require("./routes/user"));
 app.use("/auth", require("./routes/auth"));
 
 app.use("/api/clients", require("./routes/client"));
+app.use("/api/content", require("./routes/content"));
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

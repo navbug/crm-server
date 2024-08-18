@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const activitySchema = new mongoose.Schema({
+const clientSchema = new mongoose.Schema({
   clientName: {
     type: String,
     required: true,
@@ -23,17 +23,24 @@ const activitySchema = new mongoose.Schema({
   groups: [
     {
       type: String,
-    }
+    },
   ],
   activity: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "ActivityModel"
-    }
+      category: {
+        type: String,
+        required: true,
+      },
+      details: String,
+      dateAndTime: {
+        type: String,
+        required: true,
+      },
+    },
   ],
   dateAdded: {
     type: String,
-    default: Date.now()
+    default: Date.now,
   },
   lastActivity: {
     type: String,
@@ -41,6 +48,6 @@ const activitySchema = new mongoose.Schema({
   contacted: Boolean,
 });
 
-const ClientModel = mongoose.model("ClientModel", activitySchema);
+const ClientModel = mongoose.model("ClientModel", clientSchema);
 
 module.exports = ClientModel;

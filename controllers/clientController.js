@@ -57,7 +57,6 @@ exports.updateClient = async (req, res) => {
     const clientInfoUpdated = await ClientModel.findByIdAndUpdate(
       clientInfo._id,
       clientInfo,
-      { new: true, runValidators: true }
     );
 
     if (!clientInfoUpdated) {
