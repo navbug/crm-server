@@ -1,8 +1,20 @@
 const ClientModel = require("../models/client");
 
-exports.getAllClients = async (req, res) => {
+exports.getClientsOfAllUsers = async (req, res) => {
   try {
     const clients = await ClientModel.find({});
+
+    res.status(200).json({clients});
+  } catch (err) {
+    console.log("Error getting clients: ", err);
+    res.status(500).json({ error: "Interval Server Error" });
+  }
+};
+
+exports.getAllClients = async (req, res) => {
+  try {
+    console.log("USERR :", req.user._id);
+    const clients = await ClientModel.find({ user: req.user._id });
 
     res.status(200).json({clients});
   } catch (err) {
@@ -71,3 +83,17 @@ exports.updateClient = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+exports.deleteClient = async (req, res) => {
+  try {
+    const clientId = req.params.clientId;
+    const clientDeleted = await ClientModel.findByIdAndDelete(clientId);
+
+    console.log(clientDeleted);
+
+    res.json({ message: "Client deleted successfully" });
+  } catch (err) {
+    console.log("Error deleting client: ", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}

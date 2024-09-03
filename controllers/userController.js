@@ -1,66 +1,85 @@
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const path = require("path");
+const fs = require("fs");
 const mongoose = require("mongoose");
-// const UserModel = mongoose.model("UserModel");
-const UserModel = require("../models/user");
 const { JWT_SECRET } = require("../config");
+const User = require("../models/user");
 
-exports.register = async (req, res) => {
+exports.getAllUsers = async (req, res) => {
   try {
-    const { name, email, password, avatar } = req.body;
-    if (!name || !password || !email) {
-      return res.status(400).json({ error: "Fill all required fields" });
-    }
+    const users = await User.find({}).select("-password");
 
-    const userInDB = await UserModel.findOne({ email: email });
-    if (userInDB) {
-      return res.status(500).json({ error: "User already registered" });
-    }
-    
-    const hashedPassword = await bcryptjs.hash(password, 8);
-    console.log("register log");
-    const user = new UserModel({
-      name,
-      email,
-      password: hashedPassword,
-      avatar,
-    });
-
-    await user.save();
-    res.status(201).json({ result: "User Registered!" });
+    res.status(200).json({ users });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Server error" });
+    console.log("Error getting all users: ", err);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-exports.login = async (req, res) => {
+exports.getUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: "Fill all required fields" });
-    }
+    const userId = req.params.userId;
+    console.log(userId);
+    
+    const user = await User.findById(userId).select("-password");
 
-    const userInDB = await UserModel.findOne({ email: email });
-    if (!userInDB) {
-      return res.status(401).json({ error: "Invalid Credentials" });
-    }
-
-    const didMatch = await bcryptjs.compare(password, userInDB.password);
-    if (didMatch) {
-      const jwtToken = jwt.sign({ _id: userInDB._id }, JWT_SECRET);
-      const userInfo = {
-        _id: userInDB._id,
-        email: userInDB.email,
-        name: userInDB.name,
-        avatar: userInDB.avatar,
-      };
-      res.status(200).json({ result: { token: jwtToken, user: userInfo } });
-    } else {
-      return res.status(401).json({ error: "Invalid Credentials" });
-    }
+    res.status(200).json({user});
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Server error" });
+    console.log("Error getting user details: ", err);
+    res.status(500).json({ error: "Interval Server Error" });
+  }
+};
+
+exports.updateUser = async (req, res) => {
+  try {
+    const user = req.body;
+
+    const userUpdated = await User.findByIdAndUpdate(
+      user._id,
+      user,
+    );
+
+    if (!userUpdated) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    res.status(200).json({ result: "User Info Updated!", user: userUpdated });
+  } catch (err) {
+    console.log("Error updating user: ", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.uploadAvatar = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded." });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    // Delete old avatar if it exists
+    // if (user.avatar) {
+    //   const oldAvatarPath = path.join(__dirname, "..", "uploads", user.avatar);
+    //   if (fs.existsSync(oldAvatarPath)) {
+    //     fs.unlinkSync(oldAvatarPath);
+    //   }
+    // }
+
+    // Update user with new avatar
+    user.avatar = `/uploads/${req.file.filename}`;
+    await user.save();
+
+    res.status(200).json({ message: "Avatar uploaded successfully", user });
+  } catch (err) {
+    console.log("Error uploading avatar: ", err);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };

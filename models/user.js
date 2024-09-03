@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
-const userSchema = new mongoose.Schema({
-  googleId: String,
+const UserSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -9,20 +9,44 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
+    unique: true,
   },
   password: {
     type: String,
-    // required: true,
+    required: function() { return !this.googleId; },
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true,
   },
   avatar: {
     type: String,
-    default: "https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI="
+    default: ""
   },
   phoneNumber: Number,
   whatsappNumber: Number,
   country: String,
+  assignLeads: {
+    type: Boolean,
+    default: true,
+  },
+  lastLeadReceived: {
+    type: String,
+    default: "",
+  }
 });
 
-const UserModel = mongoose.model("UserModel", userSchema);
+UserSchema.pre("save", async function (next) {
+  if(!this.isModified("password")) {
+    return next();
+  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
 
-module.exports = UserModel;
+UserSchema.methods.matchPassword = async function(enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+}
+
+module.exports = mongoose.model("User", UserSchema);

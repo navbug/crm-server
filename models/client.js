@@ -45,7 +45,15 @@ const clientSchema = new mongoose.Schema({
   lastActivity: {
     type: String,
   },
-  contacted: Boolean,
+  contacted: {
+    type: Boolean,
+    default: false
+  },
+  followUp: {
+    type: String,
+    default: ""
+  },
+  user: String,
 });
 
 const ClientModel = mongoose.model("ClientModel", clientSchema);

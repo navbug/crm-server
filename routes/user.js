@@ -1,23 +1,26 @@
 const express = require("express");
+const multer = require("multer");
+const path = require("path");
 const router = express.Router();
-const bcryptjs = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const mongoose = require("mongoose");
-const UserModel = mongoose.model("UserModel");
 const { JWT_SECRET } = require("../config");
-const { login, register } = require("../controllers/userController");
+const { getUser, updateUser, uploadAvatar, getAllUsers } = require("../controllers/userController");
 
-router.post("/register", register);
-
-router.post("/login", login);
-
-router.get("/current_user", (req, res) => {
-  res.send(req.user);
+// Configure multer for file upload
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname));
+  }
 });
 
-router.get("/logout", (req, res) => {
-  req.logOut();
-  res.redirect('http://localhost:5173');
-});
+const upload = multer({ storage: storage });
+
+router.get("/all", getAllUsers);
+router.get("/:userId", getUser);
+router.put("/:userId", updateUser);
+router.post("/:userId/upload-avatar", upload.single("avatar"), uploadAvatar);
 
 module.exports = router;
