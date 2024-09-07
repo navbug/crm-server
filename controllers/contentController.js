@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const path = require("path");
+const fs = require('fs');
 const ContentModel = require("../models/content");
 
 exports.getMessages = async (req, res) => {
@@ -264,13 +265,31 @@ exports.deleteFile = async (req, res) => {
   try {
     const fileId = req.params.fileId;
 
+    // Find the file document first
+    const content = await ContentModel.findOne({ "files._id": fileId });
+    if (!content) {
+      return res.status(404).json({ message: "File not found" });
+    }
+
+    const file = content.files.find(f => f._id.toString() === fileId);
+    if (!file) {
+      return res.status(404).json({ message: "File not found" });
+    }
+
+    // Delete the file from the filesystem
+    const filePath = path.join(__dirname, '..', file.fileLink);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    // Remove the file from the database
     const result = await ContentModel.updateOne(
       {},
       { $pull: { files: { _id: fileId } } }
     );
 
     if (result.modifiedCount === 0) {
-      return res.status(404).json({ message: "File not found" });
+      return res.status(404).json({ message: "File not found in database" });
     }
 
     res.json({ message: "File deleted successfully" });
@@ -389,13 +408,45 @@ exports.updatePageData = async (req, res) => {
 
 exports.deletePage = async (req, res) => {
   try {
+    const pageId = req.params.pageId;
+
+    // Find the page document first
+    const content = await ContentModel.findOne({ "pages._id": pageId });
+    if (!content) {
+      return res.status(404).json({ message: "Page not found" });
+    }
+
+    const page = content.pages.find(p => p._id.toString() === pageId);
+    if (!page) {
+      return res.status(404).json({ message: "Page not found" });
+    }
+
+    // Delete associated images
+    if (page.images && page.images.length > 0) {
+      page.images.forEach(imagePath => {
+        const fullPath = path.join(__dirname, '..', imagePath);
+        if (fs.existsSync(fullPath)) {
+          fs.unlinkSync(fullPath);
+        }
+      });
+    }
+
+    // Delete associated PDF file
+    if (page.pdfLink) {
+      const pdfPath = path.join(__dirname, '..', page.pdfLink);
+      if (fs.existsSync(pdfPath)) {
+        fs.unlinkSync(pdfPath);
+      }
+    }
+
+    // Remove the page from the database
     const result = await ContentModel.updateOne(
       {},
-      { $pull: { pages: { _id: req.params.pageId } } }
+      { $pull: { pages: { _id: pageId } } }
     );
 
     if (result.modifiedCount === 0) {
-      return res.status(404).json({ message: "Page not found" });
+      return res.status(404).json({ message: "Page not found in database" });
     }
 
     res.json({ message: "Page deleted successfully" });

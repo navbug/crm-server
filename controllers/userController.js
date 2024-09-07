@@ -66,12 +66,12 @@ exports.uploadAvatar = async (req, res) => {
     }
 
     // Delete old avatar if it exists
-    // if (user.avatar) {
-    //   const oldAvatarPath = path.join(__dirname, "..", "uploads", user.avatar);
-    //   if (fs.existsSync(oldAvatarPath)) {
-    //     fs.unlinkSync(oldAvatarPath);
-    //   }
-    // }
+    if (user.avatar) {
+      const oldAvatarPath = path.join(__dirname, "..", user.avatar);
+      if (fs.existsSync(oldAvatarPath)) {
+        fs.unlinkSync(oldAvatarPath);
+      }
+    }
 
     // Update user with new avatar
     user.avatar = `/uploads/${req.file.filename}`;
