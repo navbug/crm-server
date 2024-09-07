@@ -1,39 +1,36 @@
+const mongoose = require("mongoose");
 const path = require("path");
 const ContentModel = require("../models/content");
 
-exports.getAllContent = async (req, res) => {
+exports.getMessages = async (req, res) => {
   try {
-    const content = await ContentModel.find({});
-
-    res.status(200).json({ content });
-  } catch (err) {
-    console.log("Error getting content: ", err);
-    res.status(500).json({ error: "Interval Server Error" });
+    const content = await ContentModel.findOne();
+    if (!content) {
+      return res.status(404).json({ message: "No messages found" });
+    }
+    res.json(content.messages);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-const mongoose = require("mongoose");
-
 exports.getMessage = async (req, res) => {
   try {
-    const messageId = req.params.messageId;
-    console.log(messageId);
-
-    const result = await ContentModel.aggregate([
-      { $unwind: "$messages" },
-      { $match: { "messages._id": new mongoose.Types.ObjectId(messageId) } },
-      { $project: { message: "$messages" } },
-    ]);
-
-    if (result.length === 0) {
-      return res.status(404).json({ error: "Message not found" });
+    const content = await ContentModel.findOne();
+    if (!content) {
+      return res.status(404).json({ message: "No content found" });
     }
-    console.log(result[0].message);
-    const message = result[0].message;
-    res.status(200).json({ message });
-  } catch (err) {
-    console.log("Error getting message details: ", err);
-    res.status(500).json({ error: "Internal Server Error" });
+
+    const message = content.messages.id(req.params.messageId);
+    if (!message) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+
+    res.json(message);
+  } catch (error) {
+    console.error("Error fetching message:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -46,22 +43,19 @@ exports.addMessage = async (req, res) => {
     await content.save();
     res.status(201).json({ result: "Message Added!" });
   } catch (err) {
-    console.log("Error adding message: ", err);
+    console.error("Error adding message: ", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
 exports.updateMessage = async (req, res) => {
   try {
-    // const messageId = req.params.messageId;
+    const messageId = req.params.messageId;
     const updateData = req.body;
 
-    // console.log("Updating message:", messageId);
-    console.log("Update data:", updateData);
-
     const result = await ContentModel.findOneAndUpdate(
-      { "messages._id": new mongoose.Types.ObjectId(updateData._id) },
-      { $set: { "messages.$": updateData } },
+      { "messages._id": messageId },
+      { $set: { "messages.$": { ...updateData, _id: messageId } } },
       { new: true, runValidators: true }
     );
 
@@ -81,20 +75,23 @@ exports.updateMessage = async (req, res) => {
       .status(200)
       .json({ result: "Message Updated", message: updatedMessage });
   } catch (err) {
-    console.log("Error updating message: ", err);
-    if (err.name === "ValidationError") {
-      return res.status(400).json({ error: err.message });
-    }
+    console.error("Error updating message: ", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
 exports.deleteMessage = async (req, res) => {
   try {
+    const messageId = req.params.messageId;
+
     const result = await ContentModel.updateOne(
       {},
-      { $pull: { messages: { _id: req.params.messageId } } }
+      { $pull: { messages: { _id: messageId } } }
     );
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ message: "File not found" });
+    }
 
     res.json({ message: "Message deleted successfully" });
   } catch (error) {
@@ -104,8 +101,6 @@ exports.deleteMessage = async (req, res) => {
 };
 
 exports.uploadFile = async (req, res) => {
-  console.log(req.file);
-
   try {
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
@@ -113,7 +108,6 @@ exports.uploadFile = async (req, res) => {
 
     let activity = JSON.parse(req.body.activity);
     const fileLink = `/uploads/${req.file.filename}`;
-    console.log(fileLink);
 
     const newFile = {
       title: req.body.title || req.file.originalname,
@@ -147,9 +141,6 @@ exports.uploadFile = async (req, res) => {
 };
 
 exports.updateFile = async (req, res) => {
-  console.log(req.file);
-  console.log(req.body);
-
   try {
     const fileId = req.params.id;
 
@@ -195,35 +186,11 @@ exports.updateFile = async (req, res) => {
 };
 
 exports.updateFileData = async (req, res) => {
-  console.log("Updating file data" + req.body);
   try {
     const fileId = req.params.fileId;
-    const {
-      title,
-      fileName,
-      fileLink,
-      mimeType,
-      size,
-      shared,
-      lastShared,
-      created,
-      lastUpdated,
-      activity,
-      template
-    } = req.body;
+    const { title, fileName, fileLink, mimeType, size, shared, lastShared, created, lastUpdated, activity, template } = req.body;
 
-    let updateData = {
-      title,
-      fileName,
-      fileLink,
-      mimeType,
-      size,
-      shared,
-      created,
-      lastShared,
-      lastUpdated,
-      template,
-    };
+    let updateData = { title, fileName, fileLink, mimeType, size, shared, created, lastShared, lastUpdated, template };
 
     if (activity) {
       try {
@@ -276,7 +243,6 @@ exports.getFile = async (req, res) => {
     }
 
     const file = content.files.id(req.params.fileId);
-    console.log(file);
     if (!file) {
       return res.status(404).json({ message: "File not found" });
     }
@@ -290,7 +256,7 @@ exports.getFile = async (req, res) => {
 
 exports.getFileSingle = async (req, res) => {
   const filePath = path.join(__dirname, "uploads", req.params.filename);
-  console.log(filePath);
+
   res.sendFile(filePath);
 };
 
@@ -366,21 +332,7 @@ exports.addPage = async (req, res) => {
       pdfLink = `/uploads/${req.files.pdf[0].filename}`;
     }
 
-    console.log(title, description, websiteLink);
-    console.log(images, pdfLink);
-
-    const newPage = {
-      title,
-      description,
-      images,
-      websiteLink,
-      pdfLink,
-      shared: 0,
-      lastShared: "",
-      created,
-      lastUpdated,
-      activity,
-    };
+    const newPage = { title, description, images, websiteLink, pdfLink, shared: 0, lastShared: "", created, lastUpdated, activity };
 
     const content = await ContentModel.findOne();
     if (!content) {
@@ -391,9 +343,7 @@ exports.addPage = async (req, res) => {
       await content.save();
     }
 
-    res
-      .status(201)
-      .json({ message: "Page created successfully", page: newPage });
+    res.status(201).json({ message: "Page created successfully", page: newPage });
   } catch (error) {
     console.error("Error adding page:", error);
     res.status(500).json({ message: "Server error", error: error.message });
@@ -401,36 +351,11 @@ exports.addPage = async (req, res) => {
 };
 
 exports.updatePageData = async (req, res) => {
-  console.log("REQ body: " + req.body);
   try {
     const pageId = req.params.pageId;
-    const {
-      title,
-      description,
-      websiteLink,
-      activity,
-      created,
-      lastUpdated,
-      shared,
-      lastShared,
-      images,
-      pdfLink,
-      template,
-    } = req.body;
+    const { title, description, websiteLink, activity, created, lastUpdated, shared, lastShared, images, pdfLink, template } = req.body;
 
-    const updatePage = {
-      title,
-      description,
-      images,
-      websiteLink,
-      pdfLink,
-      created,
-      shared,
-      lastShared,
-      lastUpdated,
-      activity,
-      template,
-    };
+    const updatePage = { title, description, images, websiteLink, pdfLink, created, shared, lastShared, lastUpdated, activity, template };
 
     if (activity) {
       try {
@@ -440,8 +365,6 @@ exports.updatePageData = async (req, res) => {
         return res.status(400).json({ message: "Invalid activity data" });
       }
     }
-
-    console.log("UPDATED page: " + updatePage);
 
     const result = await ContentModel.findOneAndUpdate(
       { "pages._id": pageId },

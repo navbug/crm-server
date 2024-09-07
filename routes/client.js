@@ -6,9 +6,9 @@ const router = express.Router();
 router.get("/allClients", protect, getClientsOfAllUsers);
 
 router.get("/all", protect, getAllClients);
-router.get("/:clientId", getClient);
-router.put("/:clientId", updateClient);
-router.post("/new", addClient);
-router.delete("/:clientId", deleteClient);
+router.get("/:clientId", protect, getClient);
+router.put("/:clientId", protect, updateClient);
+router.post("/new", protect, addClient);
+router.delete("/:clientId", protect, deleteClient);
 
 module.exports = router;

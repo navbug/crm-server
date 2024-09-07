@@ -8,6 +8,8 @@ const { PORT, CLIENT_URL, SESSION_SECRET } = require("./config");
 const connectDB = require("./config/db");
 const auth = require("./routes/auth");
 const user = require("./routes/user");
+const client = require("./routes/client");
+const content = require("./routes/content");
 require("./config/passport")(passport);
 
 const app = express();
@@ -43,8 +45,8 @@ app.use(passport.session());
 app.use("/api/auth", auth);
 app.use("/api/users", user);
 
-app.use("/api/clients", require("./routes/client"));
-app.use("/api/content", require("./routes/content"));
+app.use("/api/clients", client);
+app.use("/api/content", content);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

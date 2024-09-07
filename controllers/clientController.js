@@ -6,19 +6,18 @@ exports.getClientsOfAllUsers = async (req, res) => {
 
     res.status(200).json({clients});
   } catch (err) {
-    console.log("Error getting clients: ", err);
+    console.error("Error getting clients: ", err);
     res.status(500).json({ error: "Interval Server Error" });
   }
 };
 
 exports.getAllClients = async (req, res) => {
   try {
-    console.log("USERR :", req.user._id);
     const clients = await ClientModel.find({ user: req.user._id });
 
     res.status(200).json({clients});
   } catch (err) {
-    console.log("Error getting clients: ", err);
+    console.error("Error getting clients: ", err);
     res.status(500).json({ error: "Interval Server Error" });
   }
 };
@@ -26,13 +25,12 @@ exports.getAllClients = async (req, res) => {
 exports.getClient = async (req, res) => {
   try {
     const clientId = req.params.clientId;
-    console.log(clientId);
     
     const client = await ClientModel.findById(clientId);
 
     res.status(200).json({client});
   } catch (err) {
-    console.log("Error getting client details: ", err);
+    console.error("Error getting client details: ", err);
     res.status(500).json({ error: "Interval Server Error" });
   }
 };
@@ -50,19 +48,17 @@ exports.addClient = async (req, res) => {
         .json({ error: "Client with the phone no. already exists." });
     }
 
-    console.log("client add log", clientInfo);
     const client = new ClientModel(clientInfo);
 
     await client.save();
     res.status(201).json({ result: "Client Added!" });
   } catch (err) {
-    console.log("Error adding client: ", err);
+    console.error("Error adding client: ", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
 exports.updateClient = async (req, res) => {
-  console.log("update client log", req.body);
   try {
     const clientInfo = req.body;
 
@@ -75,11 +71,9 @@ exports.updateClient = async (req, res) => {
       return res.status(404).json({ error: "Client not found." });
     }
 
-    console.log("client update log", clientInfoUpdated);
-
     res.status(200).json({ result: "Client Info Updated!", client: clientInfoUpdated });
   } catch (err) {
-    console.log("Error updating client: ", err);
+    console.error("Error updating client: ", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -89,11 +83,9 @@ exports.deleteClient = async (req, res) => {
     const clientId = req.params.clientId;
     const clientDeleted = await ClientModel.findByIdAndDelete(clientId);
 
-    console.log(clientDeleted);
-
     res.json({ message: "Client deleted successfully" });
   } catch (err) {
-    console.log("Error deleting client: ", err);
+    console.error("Error deleting client: ", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 }

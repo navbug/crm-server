@@ -5,7 +5,7 @@ const router = express.Router();
 const { JWT_SECRET } = require("../config");
 const { getUser, updateUser, uploadAvatar, getAllUsers } = require("../controllers/userController");
 
-// Configure multer for file upload
+// Setup multer for file upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploads/");

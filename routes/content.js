@@ -19,9 +19,9 @@ const {
   deleteMessage,
   updateFileData,
   updatePageData,
+  getMessages,
 } = require("../controllers/contentController");
 
-// Set up multer for file upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploads/");
@@ -33,9 +33,9 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-router.get("/all", getAllContent);
 
 //Message routes
+router.get("/message/all", getMessages);
 router.post("/message", addMessage);
 router.get("/message/:messageId", getMessage);
 router.put("/message/:messageId", updateMessage);
@@ -52,8 +52,8 @@ router.delete("/file/:fileId", deleteFile);
 //Page routes
 router.get("/page/all", getAllPages);
 router.get("/page/:pageId", getPage);
-router.post("/page", upload.fields([{ name: 'images', maxCount: 10 }, { name: 'pdf', maxCount: 1 }]), addPage);
-router.put("/page/:pageId", upload.fields([{ name: 'images', maxCount: 10 }, { name: 'pdf', maxCount: 1 }]), updatePageData);
+router.post("/page", upload.fields([{ name: "images", maxCount: 10 }, { name: "pdf", maxCount: 1 }]), addPage);
+router.put("/page/:pageId", upload.fields([{ name: "images", maxCount: 10 }, { name: "pdf", maxCount: 1 }]), updatePageData);
 router.delete("/page/:pageId", deletePage);
 
 module.exports = router;
