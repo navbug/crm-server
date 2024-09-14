@@ -32,7 +32,10 @@ router.get('/google/success', (req, res) => {
 router.get('/google/callback',
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
-    res.redirect(`/api/auth/google/success`);
+    // res.redirect(`/api/auth/google/success`);
+
+    const token = jwt.sign({ id: req.user._id }, JWT_SECRET, { expiresIn: '30d' });
+    res.redirect(`${CLIENT_URL}/auth-callback?token=${token}`);
   }
 );
 
