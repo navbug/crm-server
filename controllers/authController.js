@@ -58,6 +58,5 @@ exports.getUser = (req, res) => {
     _id: req.user._id,
     name: req.user.name,
     email: req.user.email,
-    token: generateToken(req.user._id)
   });
 };
