@@ -34,7 +34,8 @@ router.get('/google/callback',
   (req, res) => {
     // res.redirect(`/api/auth/google/success`);
 
-    res.redirect(`${CLIENT_URL}/auth-callback`);
+    const token = jwt.sign({ id: req.user.id }, JWT_SECRET, { expiresIn: '30d' });
+    res.redirect(`${CLIENT_URL}/auth-callback?token=${token}`);
   }
 );
 
