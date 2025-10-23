@@ -2,6 +2,7 @@ const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config");
 const { response } = require("express");
+const { oauth2Client } = require("../utils/googleClient");
 
 const generateToken = (id) => {
   return jwt.sign({ id }, JWT_SECRET, {
@@ -52,6 +53,19 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+exports.googleAuth = async (req, res, next) => {
+  const code = req.query.code;
+  console.log("CODE: "+ code);
+  try {
+    const googleRes = await oauth2Client.getToken(code);
+    oauth2Client.setCredentials(googleRes.tokens);
+    const userRes = await axios.get(`https://www.googleapis.com/oauth2/v1/userInfo?alt=json&access_token=${googleRes.tokens.access_token}`);
+    console.log(userRes);
+  } catch (error) {
+    
+  }
+}
 
 exports.getUser = (req, res) => {
   res.json({

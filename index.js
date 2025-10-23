@@ -17,14 +17,6 @@ const app = express();
 //Connect to MongoDB database
 connectDB();
 
-// Define the uploads directory
-const uploadsDir = path.join(__dirname, 'uploads');
-
-// Ensure the uploads directory exists
-if (!fs.existsSync(uploadsDir)){
-    fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
 const corsOptions = {
   origin: [
     "https://the-crm-app.vercel.app", 
@@ -38,15 +30,21 @@ app.use(cors(corsOptions));
 // app.use(cors({ origin: CLIENT_URL, credentials: true }));
 
 app.use(express.json());
-app.use(
-  session({
-    secret: SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-  })
-);
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(
+//   session({
+//     secret: SESSION_SECRET,
+//     resave: false,
+//     saveUninitialized: false,
+//   })
+// );
+
+// Define the uploads directory
+const uploadsDir = path.join(__dirname, 'uploads');
+
+// Ensure the uploads directory exists
+if (!fs.existsSync(uploadsDir)){
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // Serve static files from the uploads directory
 app.use("/uploads", express.static(uploadsDir));
