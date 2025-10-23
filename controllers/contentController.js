@@ -108,7 +108,7 @@ exports.uploadFile = async (req, res) => {
     }
 
     let activity = JSON.parse(req.body.activity);
-    const fileLink = `/uploads/${req.file.filename}`;
+    const fileLink = `${req.file.path}`;
 
     const newFile = {
       title: req.body.title || req.file.originalname,
@@ -169,7 +169,7 @@ exports.updateFile = async (req, res) => {
 
     // If a new file is uploaded, update file-related properties
     if (req.file) {
-      const fileLink = `/uploads/${req.file.filename}`;
+      const fileLink = `${req.file.path}`;
       updatedFile.filename = req.file.filename;
       updatedFile.fileLink = fileLink;
       updatedFile.mimeType = req.file.mimetype;

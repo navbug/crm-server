@@ -21,18 +21,38 @@ const {
   updatePageData,
   getMessages,
 } = require("../controllers/contentController");
+const { storage } = require("../utils/cloudinary");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "uploads/");
+//   },
+//   filename: function (req, file, cb) {
+//     cb(null, Date.now() + path.extname(file.originalname));
+//   },
+// });
+
+// const upload = multer({ storage: storage });
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 1024 * 1024 * 5 // 5MB limit
   },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
+  fileFilter: (req, file, cb) => {
+    if (
+      file.mimetype === "image/png" || 
+      file.mimetype === "image/jpg" || 
+      file.mimetype === "image/jpeg" || 
+      file.mimetype === "image/webp" || 
+      file.mimetype === "image/svg+xml"
+    ) {
+      cb(null, true);
+    } else {
+      cb(new Error("File types allowed are .jpeg, .png, .jpg, .webp, .svg"), false);
+    }
+  }
 });
-
-const upload = multer({ storage: storage });
-
 
 //Message routes
 router.get("/message/all", getMessages);
