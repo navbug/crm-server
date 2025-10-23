@@ -41,15 +41,11 @@ const upload = multer({
   },
   fileFilter: (req, file, cb) => {
     if (
-      file.mimetype === "image/png" || 
-      file.mimetype === "image/jpg" || 
-      file.mimetype === "image/jpeg" || 
-      file.mimetype === "image/webp" || 
-      file.mimetype === "image/svg+xml"
+      file.mimetype === "application/pdf"
     ) {
       cb(null, true);
     } else {
-      cb(new Error("File types allowed are .jpeg, .png, .jpg, .webp, .svg"), false);
+      cb(new Error("Only PDF files are allowed"), false);
     }
   }
 });
