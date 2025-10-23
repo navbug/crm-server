@@ -26,12 +26,15 @@ if (!fs.existsSync(uploadsDir)){
 }
 
 const corsOptions = {
-  origin: [],
+  origin: [
+    "https://the-crm-app.vercel.app", 
+    "http://localhost:5173"
+  ],
   credentials: true,
   optionsSuccessStatus: 200
 };
 
-app.use(cors());
+app.use(cors(corsOptions));
 // app.use(cors({ origin: CLIENT_URL, credentials: true }));
 
 app.use(express.json());
