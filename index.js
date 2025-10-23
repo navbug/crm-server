@@ -51,7 +51,7 @@ app.use("/uploads", express.static(uploadsDir));
 app.get("/", (req, res) => {
   res.send("hi from crmserver");
 })
-app.use("/auth", auth);
+app.use("/api/auth", auth);
 app.use("/api/users", user);
 
 app.use("/api/clients", client);
