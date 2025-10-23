@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-const passport = require("passport");
 const session = require("express-session");
 const fs = require('fs');
 const path = require("path");
@@ -10,7 +9,6 @@ const auth = require("./routes/auth");
 const user = require("./routes/user");
 const client = require("./routes/client");
 const content = require("./routes/content");
-require("./config/passport")(passport);
 
 const app = express();
 
@@ -50,6 +48,9 @@ if (!fs.existsSync(uploadsDir)){
 app.use("/uploads", express.static(uploadsDir));
 
 //Routes
+app.get("/", (req, res) => {
+  res.send("hi from crmserver");
+})
 app.use("/api/auth", auth);
 app.use("/api/users", user);
 
