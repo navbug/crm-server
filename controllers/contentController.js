@@ -343,12 +343,12 @@ exports.addPage = async (req, res) => {
     }
     let images = [];
     if (req.files.images) {
-      images = req.files.images.map((file) => `/uploads/${file.filename}`);
+      images = req.files.images.map((file) => `${file.path}`);
     }
 
     let pdfLink = null;
     if (req.files.pdf && req.files.pdf.length > 0) {
-      pdfLink = `/uploads/${req.files.pdf[0].filename}`;
+      pdfLink = `${req.files.pdf[0].path}`;
     }
 
     const newPage = { title, description, images, websiteLink, pdfLink, shared: 0, lastShared: "", created, lastUpdated, activity };
