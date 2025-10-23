@@ -63,7 +63,8 @@ exports.googleAuth = async (req, res, next) => {
     const userRes = await axios.get(`https://www.googleapis.com/oauth2/v1/userInfo?alt=json&access_token=${googleRes.tokens.access_token}`);
     console.log(userRes);
   } catch (error) {
-    
+    console.log(error);
+    res.status(500).json({ message: error });
   }
 }
 
