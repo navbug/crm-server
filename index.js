@@ -50,7 +50,7 @@ if (!fs.existsSync(uploadsDir)){
 app.use("/uploads", express.static(uploadsDir));
 
 //Routes
-app.use("/api/auth", auth);
+app.use("/auth", auth);
 app.use("/api/users", user);
 
 app.use("/api/clients", client);
