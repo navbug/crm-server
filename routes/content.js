@@ -37,15 +37,14 @@ const { storage } = require("../utils/cloudinary");
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 1024 * 1024 * 5 // 5MB limit
+    fileSize: 1024 * 1024 * 10 // 10MB limit
   },
   fileFilter: (req, file, cb) => {
-    if (
-      file.mimetype === "application/pdf"
-    ) {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp', 'application/pdf'];
+    if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error("Only PDF files are allowed"), false);
+      cb(new Error('Invalid file type. Only images and PDFs are allowed.'));
     }
   }
 });

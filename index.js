@@ -40,9 +40,9 @@ app.use(express.json());
 const uploadsDir = path.join(__dirname, 'uploads');
 
 // Ensure the uploads directory exists
-if (!fs.existsSync(uploadsDir)){
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+// if (!fs.existsSync(uploadsDir)){
+//   fs.mkdirSync(uploadsDir, { recursive: true });
+// }
 
 // Serve static files from the uploads directory
 app.use("/uploads", express.static(uploadsDir));
