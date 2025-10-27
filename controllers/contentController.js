@@ -102,15 +102,13 @@ exports.deleteMessage = async (req, res) => {
 };
 
 exports.uploadFile = async (req, res) => {
-  console.log("testing");
   try {
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
-    console.log(req.file);
+
     let activity = JSON.parse(req.body.activity);
-    const fileLink = `${req.file.path}`;
-    console.log("FILEPATH :" + req.file.path);
+    const fileLink = `/uploads/${req.file.filename}`;
 
     const newFile = {
       title: req.body.title || req.file.originalname,
@@ -171,7 +169,7 @@ exports.updateFile = async (req, res) => {
 
     // If a new file is uploaded, update file-related properties
     if (req.file) {
-      const fileLink = `${req.file.path}`;
+      const fileLink = `/uploads/${req.file.filename}`;
       updatedFile.filename = req.file.filename;
       updatedFile.fileLink = fileLink;
       updatedFile.mimeType = req.file.mimetype;
