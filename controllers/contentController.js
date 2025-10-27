@@ -102,13 +102,15 @@ exports.deleteMessage = async (req, res) => {
 };
 
 exports.uploadFile = async (req, res) => {
+  console.log("testing");
   try {
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
-
+    console.log(req.file);
     let activity = JSON.parse(req.body.activity);
-    const fileLink = `/uploads/${req.file.filename}`;
+    const fileLink = `${req.file.path}`;
+    console.log("FILEPATH :" + req.file.path);
 
     const newFile = {
       title: req.body.title || req.file.originalname,
@@ -169,7 +171,7 @@ exports.updateFile = async (req, res) => {
 
     // If a new file is uploaded, update file-related properties
     if (req.file) {
-      const fileLink = `/uploads/${req.file.filename}`;
+      const fileLink = `${req.file.path}`;
       updatedFile.filename = req.file.filename;
       updatedFile.fileLink = fileLink;
       updatedFile.mimeType = req.file.mimetype;
@@ -343,12 +345,12 @@ exports.addPage = async (req, res) => {
     }
     let images = [];
     if (req.files.images) {
-      images = req.files.images.map((file) => `/uploads/${file.filename}`);
+      images = req.files.images.map((file) => `${file.path}`);
     }
 
     let pdfLink = null;
     if (req.files.pdf && req.files.pdf.length > 0) {
-      pdfLink = `/uploads/${req.files.pdf[0].filename}`;
+      pdfLink = `${req.files.pdf[0].path}`;
     }
 
     const newPage = { title, description, images, websiteLink, pdfLink, shared: 0, lastShared: "", created, lastUpdated, activity };
